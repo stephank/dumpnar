@@ -1,0 +1,35 @@
+name: build
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+
+    - uses: actions/checkout@v3
+    - run: make
+
+    - uses: cachix/install-nix-action@v18
+    - name: test
+      run: |
+        for i in {1..50}; do
+          subdir=$RANDOM
+          mkdir -p test/$subdir
+
+          file1=test/$RANDOM
+          echo $RANDOM > $file1
+
+          file2=test/$subdir/$RANDOM
+          echo $RANDOM > $file2
+          chmod a+x $file2
+
+          ./dumpnar test > ours.nar
+          nix-store --dump test > theirs.nar
+          cmp ours.nar theirs.nar
+
+          rm -fr test *.nar
+        done

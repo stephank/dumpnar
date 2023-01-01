@@ -1,4 +1,5 @@
 #include <cerrno>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -7,16 +8,14 @@
 #include "serialize.hh"
 
 namespace fs = std::filesystem;
-using std::cerr;
-using std::cout;
-using std::endl;
+using std::cerr, std::cout, std::endl;
 
 /** Dump file contents as NAR. */
 static void dumpContents(const fs::path &path) {
   auto size = fs::file_size(path);
   cout << NarStr{"contents"} << NarInt{size};
 
-  std::ifstream ifs("test.txt");
+  std::ifstream ifs(path);
 
   char buf[65536];
   size_t left = size;
@@ -29,7 +28,7 @@ static void dumpContents(const fs::path &path) {
   }
 
   if (!ifs) {
-    cerr << "Error reading file '" << path << "': " << std::strerror(errno)
+    cerr << "Error reading file " << path << ": " << std::strerror(errno)
          << endl;
     exit(1);
   }
@@ -79,7 +78,7 @@ static void dump(const fs::path &path) {
     break;
 
   default:
-    cerr << "File '" << path << "' has an unsupported type" << endl;
+    cerr << "File " << path << " has an unsupported type" << endl;
 
     exit(1);
   }
